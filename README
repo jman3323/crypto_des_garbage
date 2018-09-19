@@ -1,0 +1,37 @@
+Jack Dates
+
+This program is pretty simple and written in C. You can run it by compiling and executing ./des file key host port.
+The file is the plaintext file to be encrypted, the key is the key value in decimal, the host is the remote endpoint
+to send the file to (can be hostname or ip address), and the port on the remote endpoint to connect to.
+
+It will read the contents of the file, encrypt each character using our toy DES with the given key, and send the encrypted data to the remote endpoint.
+
+There are two top level functions exposed as a basic API: encrypt() and decrypt().
+They take the same arguments: the source data, the length of the source data, the key, and an output location.
+For convenience, if the output location is null it writes the encrypted data to the source location.
+
+Both of these functions call an internal encipher() function. This is done because encryption and decryption are almost identical,
+due to the properties of the feistel network used. The only difference in the two operations is that the round subkeys are used in the reverse order.
+This is accounted for by taking into encipher() an additional flag indicating whether the operation is encryption or decryption, and swapping the round subkeys
+in the case of decryption.
+
+The encipher() function first takes the given key and generates the two round subkeys.
+This is done as specified, splitting the ten bit key into five bit blocks, and in two iterations
+separated by some left circular shifts, permutes and shrinks the five bit blocks into two eight bit subkeys.
+
+It then encrypts each block, since DES is a block cipher. The block size in this case is a very convenient eight bits,
+which happens to be the bit length of a single character, one byte. So it simply iterates over each byte of the given data
+and encrypts each byte.
+
+Encrypting a single eight bit block is quite simple, and is done with the specified feistel network
+and the two round subkeys previously generated.
+
+Of course this is only a toy implementation of a DES like cipher, but it should be noted that since
+a block is exactly one byte, this is nothing more than a substitution cipher.
+Each byte is encrypted deterministically independent of its position in the plaintext or any other plaintext bytes.
+For example, if you give the program a file consisting entirely of a single character, say an uppercase A, no matter what
+the supplied key is, the output will always consist of a single character repeated, namely whatever byte an encrypted A becomes.
+This would theoretically allow an eavesdropper to use the same techniques used on substitution ciphers to attempt to decrypt the transferred data.
+For example, if the data being sent is common English, they can use standard frequency analysis techniques.
+Or if they know the file type being sent, they can match up certain magic bytes (the file header or trailer for example) to start decrypting the data.
+Or of course, there are only 1024 keys, so just brute force it :)
