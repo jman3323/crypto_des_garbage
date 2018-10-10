@@ -26,14 +26,14 @@ This is done as follows, call the server S and the client C:
 * S -> C : `g^a % p` using a random `a`
 * C -> S : `g^b % p` using a random `b`
 * S computes `(g^b)^a % p = g^(ab) % p`
-* C computes `(g^a)^b % p = g^(ab) % p`
+* C computes `(g^a)^b % p = g^(ab) % p`  
 Now both parties have the shared value `g^(ab) % p`. The only values an eavesdropper can
 get are: `g`,`p`,`g^a % p`, and `g^b % p`. The values of `a` or `b` can not be easily determined
 because that would involve solving a discrete log, which is considered computationally hard,
 as long as the numbers are big enough. I chose a public modulus `p` of 2048 bits, and likewise
 the random values for `a` are 2048 bits long.
 
-Using the shared secret, call it `k`, each party computes the sha256 hash of k to produce
+Using the shared secret, call it `k`, each party computes the sha256 hash of `k` to produce
 a key usable with AES (the hash function serves to turn `k` into a string of fixed length).
 Any symmetric cipher can be used at this point, however I chose AES for its security.
 The toy DES we implemented previously is extremely insecure. No matter how secure your Diffie Hellman
@@ -54,19 +54,20 @@ Again we have to assume all traffic is public. To maintain security, a modified 
 of the Needham-Schroeder protocol is used. The modification involves an extra nonce that
 prevents replay attacks.
 
-Let S be the server, A Alice with id A_id and key Ka, B Bob with id B_id and key Kb,
-and E_K a symmetric encryption function (AES again).
+Let S be the server, A Alice with id A\_id and key Ka, B Bob with id B\_id and key Kb,
+and E\_K a symmetric encryption function (AES again).
 If Alice wants to send a message to Bob:
 * A -> B : `A_id`
 * B -> A : `E_Kb(A_id | Nb)` where `Nb` is a random nonce
 * A -> S : `A_id | B_id | Na | E_Kb(A_id | Nb)` where `Na` is a random nonce
 * S knows `Kb`, and checks that `A_id` matches in both places
 * S -> A : `E_Ka(Na | K | B_id | E_Kb(K | A_id | Nb))`
-* A checks that `Na` and `B_id` match
+* A checks that `Na` and `B_id` match what it sent previously
 * A -> B : `E_Kb(K | A_id | Nb)`
-* B checks that `A_id` and `Nb` are as expected
+* B checks that `A_id` and `Nb` match what it sent previously  
 Now both parties have a shared secret `K`. This value was never sent in plaintext, it was sent
 encrypted with `Ka` or `Kb`, which, assuming they remained secret, are unknown to an eavesdropper.
+
 The nonce `Nb` mitigates replay attacks, since if an attacker simply retransmits
 `E_Kb(K | A_id | Nb)` from an earlier exchange, the nonce will (with very high probability)
 have changed.
