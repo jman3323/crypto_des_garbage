@@ -86,10 +86,6 @@ class KDC_Client():
         sendmsg(dst, enc_id)
         sendmsg(dst, enc_nonce)
 
-        # handshake with destination verifying the key
-        nonce = recvenc(dst, key)
-        sendenc(dst, nonce[::-1], key)
-
         # send the actual message
         sendenc(dst, msg, key)
         dst.close()
@@ -102,11 +98,13 @@ class KDC_Client():
         sock.listen(1)
         client, addr = sock.accept()
         
+        # receive senders id, send it back encrypted and with nonce
         client_id = recvmsg(client)
         sendenc(client, client_id, self.key)
         nonce = os.urandom(64)
         sendenc(client, nonce, self.key)
 
+        # recv session key and verify id and nonce
         key = recvenc(client, self.key)
         client_id_echo = recvenc(client, self.key)
         nonce_echo = recvenc(client, self.key)
@@ -115,12 +113,7 @@ class KDC_Client():
         if nonce_echo != nonce:
             raise Exception("nonce mismatch from client")
 
-        nonce = os.urandom(64)
-        sendenc(client, nonce, key)
-        nonce_rev = recvenc(client, key)
-        if nonce_rev[::-1] != nonce:
-            raise Exception("handshake with client failed")
-
+        # receive actual message
         msg = recvenc(client, key)
         client.close()
         sock.close()
