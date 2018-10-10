@@ -27,6 +27,7 @@ This is done as follows, call the server S and the client C:
 * C -> S : `g^b % p` using a random `b`
 * S computes `(g^b)^a % p = g^(ab) % p`
 * C computes `(g^a)^b % p = g^(ab) % p`  
+
 Now both parties have the shared value `g^(ab) % p`. The only values an eavesdropper can
 get are: `g`,`p`,`g^a % p`, and `g^b % p`. The values of `a` or `b` can not be easily determined
 because that would involve solving a discrete log, which is considered computationally hard,
@@ -65,6 +66,7 @@ If Alice wants to send a message to Bob:
 * A checks that `Na` and `B_id` match what it sent previously
 * A -> B : `E_Kb(K | A_id | Nb)`
 * B checks that `A_id` and `Nb` match what it sent previously  
+
 Now both parties have a shared secret `K`. This value was never sent in plaintext, it was sent
 encrypted with `Ka` or `Kb`, which, assuming they remained secret, are unknown to an eavesdropper.
 
