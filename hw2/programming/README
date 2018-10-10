@@ -1,0 +1,13 @@
+### Usage
+you will need three terminals (or background processes)  
+
+have kdc server running: `python kdc.py`  
+
+have bob listening: `python bob.py`  
+
+have alice send: `python alice.py`  
+
+(python2 by the way)
+
+### Dependencies
+pycrypto: `pip install pycrypto`
